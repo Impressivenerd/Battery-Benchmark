@@ -31,3 +31,7 @@ If the file does not exist, a new one will be created using the name you provide
 
 ## How To Use
 The original intention of this script was to test battery life during various discharging / recharging scnearios. Once this script is ran, let it run in the background while performing whatever tests need to be completed on the computer. Once those tests are completed, close your powershell prompt and look at the CSV file created using your spreadsheet editor of choice. The stats recorded in the file can allow you to graph the batteries percentage over time, as well as length of time from start to finish. 
+
+# Notes
+* The EstimatedRemainingCapacity field is a calculated field by using the total capacity of the battery and the percentage. So far, so I have been able to find an actual variable that holds the live, up to date capacity of the battery.
+* Sometimes, strange percentages are reported when on AC if at 100%. Example: Dell Precision 5520 reports 114% when plugged in and at 100% capacity.
