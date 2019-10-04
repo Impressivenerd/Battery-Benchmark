@@ -35,12 +35,18 @@ if(!$ReadOnly) {
     Write-Host "ReadOnly Mode Active! No values are being recorded." -ForegroundColor Green
 }
 
+# Sanity Check to make sure we don't try polling any faster than once per second
+if($PollingFrequency -lt 1){
+    $PollingFrequency = 1;
+    Write-Host "Warning! Invalid PollingFrequency detected. Now polling at once per second." -ForegroundColor Red
+}
+
 # Main Loop
 while(1) {
       if(!$ReadOnly){
           # If the path does not exist, start by adding the header row
           if(-Not (Test-Path $Output)) {
-              Add-Content $Output "DesignedCapacity,FullChargeCapacity,EstimatedRemainingCapacity,EstimatedChargeRemaining,Timestamp"
+              Add-Content $Output "DesignedCapacity,FullChargeCapacity,EstimatedRemainingCapacity,BatteryStatus,EstimatedChargeRemaining,Timestamp"
           }
       }
 
@@ -54,6 +60,7 @@ while(1) {
 
       # Get On Battery / AC Status
       $onPowerLine = (Get-WmiObject -class "BatteryStatus" -namespace "ROOT\WMI").PowerOnLine
+      $batteryStatus = $( If ($onPowerLine -eq $TRUE ) { "AC" } else { "Battery"} )
 
       # Get all objects as reported by the Win32_Battery class
       $colItems = Get-WmiObject -Class "Win32_Battery" -Namespace "ROOT\CIMV2" -ComputerName $strComputer
@@ -62,7 +69,7 @@ while(1) {
       $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
       # Generate the Record to output to the file
-      $outputLine = "$designedCapacity,$fullChargeCapacity,$($colItems.EstimatedChargeRemaining / 100 * $designedCapacity),$($colItems.EstimatedChargeRemaining),$ts"
+      $outputLine = "$designedCapacity,$fullChargeCapacity,$($colItems.EstimatedChargeRemaining / 100 * $designedCapacity),$batteryStatus,$($colItems.EstimatedChargeRemaining),$ts"
       if(!$ReadOnly) {
           Add-Content $Output $outputLine
       }
@@ -73,7 +80,7 @@ while(1) {
       $outputRecord | add-member -NotePropertyName "Full Charge Capacity" -NotePropertyValue $fullChargeCapacity
       $outputRecord | add-member -NotePropertyName "Remaining Capacity" -NotePropertyValue $($colItems.EstimatedChargeRemaining / 100 * $designedCapacity)
       $outputRecord | add-member -NotePropertyName "Remaining Charge" -NotePropertyValue $($colItems.EstimatedChargeRemaining)
-      $outputRecord | add-member -NotePropertyName "Battery Status" -NotePropertyValue $( If ($onPowerLine -eq $TRUE ) { "AC" } else { "Battery"} )
+      $outputRecord | add-member -NotePropertyName "Battery Status" -NotePropertyValue $batteryStatus
       $outputRecord | add-member -NotePropertyName "Time" -NotePropertyValue $ts
       if($outputRecordHeaders -eq $NULL) {
           ($outputRecord | ft | Out-String).TrimEnd()

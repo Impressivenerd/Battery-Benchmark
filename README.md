@@ -24,10 +24,35 @@ Once the script begins running, your batteries information will be polled every 
 * FullChargeCapacity
 * DeisgnedCapacity
 * EstimatedRemainingCapacity
+* BatteryStatus
 * EstimatedChargeRemaining
 * Timestamp
 
 If the file does not exist, a new one will be created using the name you provided. If the file already exists, it will append a new record each time the battery is polled.
+
+## Available Parameters
+**-ReadOnly** The *-ReadOnly* property will not write anything to file. Instead, it will only show output to the console. This is good if all you want to do is monitor your battery without saving the data out.
+
+Example:
+```
+powershell battery_benchmark.ps1 -ReadOnly
+```
+
+
+**-Output** If the *-Output* parameter is added with an absolute/relative path to a CSV file, you can immediately start recording to this file instead of being promperted for a filename. This is good if you know already know what the name of your output should be. If the *-ReadOnly* parameter has been added, this parameter will be ignored.
+
+Example
+```
+powershell battery_benchmark.ps1 -Output "test.csv"
+```
+
+
+**-PollingFrequency** If the *-PollingFrequency* parameter is added with a number, you can override the standard polling frequency of 60 seconds with a rate of your choosing. The number added to this parameter prepresents *seconds*, so the minimum polling frequency is 1 second.
+
+Example:
+```
+powershell battery_benchmark.ps1 -PollingFrequency 10
+```
 
 ## How To Use
 The original intention of this script was to test battery life during various discharging / recharging scnearios. Once this script is ran, let it run in the background while performing whatever tests need to be completed on the computer. Once those tests are completed, close your powershell prompt and look at the CSV file created using your spreadsheet editor of choice. The stats recorded in the file can allow you to graph the batteries percentage over time, as well as length of time from start to finish. 
